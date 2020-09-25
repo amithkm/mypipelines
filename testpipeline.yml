@@ -1,0 +1,54 @@
+pipelines:
+    - name: amith_pipeline
+      configuration:
+        environmentVariables:
+          readOnly:
+            MY_MESSAGE: '"Hello World!"'
+      steps:
+        - name: step_1_renamed
+          type: Bash
+          configuration:
+            inputResources:
+              - name: myAppRepo
+          execution:
+            onExecute:
+              - echo hi
+        - name: step_2
+          type: Bash
+          configuration:
+            inputSteps:
+              - name: step_1_renamed
+            runtime:
+              type: image
+              image:
+                custom:
+                  name: alpine
+                  tag: latest
+                  options: "-e HOME=/root"
+          execution:
+            onExecute:
+              - echo $MY_MESSAGE
+              - echo "Running $pipeline_name | $step_name on node ID $step_node_id"
+   
+        - name: step_3
+          type: Bash
+          configuration:
+            inputSteps:
+              - name: step_1_renamed
+          execution:
+            onExecute:
+              - echo $MY_MESSAGE
+              - echo "Running $pipeline_name | $step_name on node ID $step_node_id"
+   
+        - name: step_4
+          type: Bash
+          configuration:
+            inputSteps:
+              - name: step_2
+              - name: step_3
+          execution:
+            onExecute:
+              - echo $MY_MESSAGE
+              - echo "Running $pipeline_name | $step_name on node ID $step_node_id"
+              - add_pipeline_variables prev_runid=$run_id           
+              - echo $current_runid Completed
